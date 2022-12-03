@@ -6,9 +6,9 @@ function Square(props) {
   return (
     <button className="square" onClick={() => props.onClick()}>
       {
-      //props.value
+      props.value
       }
-      hi
+      
     </button>
   );
 }
@@ -19,10 +19,12 @@ class Game extends React.Component {
   }
 
   constructor(props){
+    let size = 7
+    const newBoard = [...new Array(size).keys()].map((i) => [...new Array(size).keys()].map((j) => (i*7)+j));
     super(props);
     this.state = {
-        player1Board: new Array(7).fill(0).map(() => new Array(7)),
-        player2Board: new Array(7).fill(0).map(() => new Array(7)),
+        player1Board: JSON.parse(JSON.stringify(newBoard)),
+        player2Board: JSON.parse(JSON.stringify(newBoard)),
         player1Turn: true,
      }
   }
@@ -47,8 +49,8 @@ class Board extends React.Component {
     row.className = "board-row";
     
     for(let j = 0; j < this.props.currentBoard.length; j++){
-      const square =this.renderSquare(i, j);
-      row.appendChild(square);
+      const square = this.renderSquare(i, j);
+      row.append(square);
     }
     return row;
   }
@@ -56,20 +58,25 @@ class Board extends React.Component {
     const board = document.createElement("div");
     for(let i = 0; i < this.props.currentBoard.length; i++){
       const row = document.createElement(this.renderRow(i));
-      board.appendChild(row);
+      board.append(row);
     }
     return board;
   }
   render() {
     return (
-      <div>
-        hi
-        
-        
-        {
-        //this.renderBoard()
-        this.props.currentBoard.map((row, i) => {return this.renderRow(i)})
-        }
+      <div>    
+      {
+        this.props.currentBoard.map((row, i) => {
+          let index = i;
+          return(
+            <div className = "board-row">
+              {this.props.currentBoard[0].map((square, j) => {
+                return this.renderSquare(index, j);
+              })}
+            </div>
+          )
+          })
+      }
       </div>
     );
   }
