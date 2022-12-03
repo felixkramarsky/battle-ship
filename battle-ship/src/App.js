@@ -44,24 +44,6 @@ class Board extends React.Component {
       />
     );
   }
-  renderRow(i){
-    const row = document.createElement("div");
-    row.className = "board-row";
-    
-    for(let j = 0; j < this.props.currentBoard.length; j++){
-      const square = this.renderSquare(i, j);
-      row.append(square);
-    }
-    return row;
-  }
-  renderBoard(){
-    const board = document.createElement("div");
-    for(let i = 0; i < this.props.currentBoard.length; i++){
-      const row = document.createElement(this.renderRow(i));
-      board.append(row);
-    }
-    return board;
-  }
   render() {
     return (
       <div>    
