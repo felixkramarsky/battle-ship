@@ -17,13 +17,27 @@ function Square(props) {
 class Game extends React.Component {
 
   handleClick(i,j){
+    if(this.state.winner){return}
     const replaceBoard = this.state.player1Turn ? this.state.player1Board: this.state.player2Board;
     if(!replaceBoard[i][j].hit){
     replaceBoard[i][j].hit = true;
+    if(replaceBoard[i][j].ship){
+      let winner = this.state.player1Turn ? "1": "2";
+      for(let i = 0; i < size; i++){
+        for(let j = 0; j < size; j++){
+          if(replaceBoard[i][j].ship && !replaceBoard[i][j].hit){
+            winner = null;
+          }
+        }
+      }
+      this.setState({
+        winner: winner
+      })
+    }
     this.setState({
       player1Board: this.state.player1Turn ? replaceBoard: this.state.player1Board,
       player2Board: this.state.player1Turn ? this.state.player2Board: replaceBoard,
-      player1Turn: !this.state.player1Turn
+      player1Turn: !this.state.player1Turn,
     })
     }
     return;
@@ -43,18 +57,25 @@ class Game extends React.Component {
 
   constructor(props){
     const newBoard = new Array(size).fill(0).map((i) => new Array(size).fill({ship: false, hit: false}));
+    let player1Board = JSON.parse(JSON.stringify(newBoard));
+    player1Board[Math.floor(Math.random()*size)][Math.floor(Math.random()*size)].ship = true;
+    let player2Board = JSON.parse(JSON.stringify(newBoard));
+    player2Board[Math.floor(Math.random()*size)][Math.floor(Math.random()*size)].ship = true;
     super(props);
     this.state = {
-        player1Board: JSON.parse(JSON.stringify(newBoard)),
-        player2Board: JSON.parse(JSON.stringify(newBoard)),
+        player1Board: player1Board,
+        player2Board: player2Board,
         player1Turn: true,
+        winner: null
      }
+
   }
   render(){
     return (
       <div>
+        {this.state.winner? <h1>Player {this.state.winner} Wins!</h1>: null}
         {this.state.player1Turn? <h1>Player 1</h1>: <h1>Player 2</h1>} 
-        <Board clickable = {true} size = {size} board = "enemy" currentBoard = {this.state.player1Turn ? this.genEnemyBoard(this.state.player1Board): this.genEnemyBoard(this.state.player2Board)} onClick = {(x,y) => this.handleClick(x,y)} />
+        <Board clickable = {true} size = {size} board = "enemy" currentBoard = {this.state.player1Turn ? this.genEnemyBoard(this.state.player1Board,"2"): this.genEnemyBoard(this.state.player2Board,"1")} onClick = {(x,y) => this.handleClick(x,y)} />
         <Board clickable = {false} size = {size} board = "me" currentBoard = {this.state.player1Turn ? this.state.player2Board: this.state.player1Board} onClick = {(x,y) => this.handleClick(x,y)} />
       </div>
 
