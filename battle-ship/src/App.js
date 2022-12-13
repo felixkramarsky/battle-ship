@@ -4,23 +4,25 @@ import React from "react";
 const size = 7;
 
 function Square(props) {
+  // a square is just a button
   return (
     <button className="square" onClick={() => props.onClick()}>
-      {
-      props.value
-      }
-      
+      { props.value }
     </button>
   );
 }
 
 class Game extends React.Component {
-
+  //This is function is passed to the board and then to the square
   handleClick(i,j){
+    //if there is a winner, do nothing
     if(this.state.winner){return}
-    const replaceBoard = this.state.player1Turn ? this.state.player1Board: this.state.player2Board;
+    // the new board is the board of the player who just clicked
+    let replaceBoard = this.state.player1Turn ? JSON.parse(JSON.stringify(this.state.player1Board)): JSON.parse(JSON.stringify(this.state.player2Board));
     if(!replaceBoard[i][j].hit){
     replaceBoard[i][j].hit = true;
+    console.log(replaceBoard[i][j].hit)
+    console.log(this.state.player1Board[i][j].hit)
     if(replaceBoard[i][j].ship){
       let winner = this.state.player1Turn ? "1": "2";
       for(let i = 0; i < size; i++){
@@ -72,18 +74,12 @@ class Game extends React.Component {
   }
   render(){
     return (
-      <div>
+      <div id = "game">
         {this.state.winner? <h1>Player {this.state.winner} Wins!</h1>: null}
         {this.state.player1Turn? <h1>Player 1</h1>: <h1>Player 2</h1>} 
-        <Board clickable = {true} size = {size} board = "enemy" currentBoard = {this.state.player1Turn ? this.genEnemyBoard(this.state.player1Board,"2"): this.genEnemyBoard(this.state.player2Board,"1")} onClick = {(x,y) => this.handleClick(x,y)} />
+        <Board clickable = {true} size = {size} board = "enemy" currentBoard = {this.state.player1Turn ? this.genEnemyBoard(this.state.player1Board): this.genEnemyBoard(this.state.player2Board)} onClick = {(x,y) => this.handleClick(x,y)} />
         <Board clickable = {false} size = {size} board = "me" currentBoard = {this.state.player1Turn ? this.state.player2Board: this.state.player1Board} onClick = {(x,y) => this.handleClick(x,y)} />
       </div>
-
-      // <div className="game">
-      // <Board size = {size} player1 = {true} currentBoard = {this.state.player1Board} onClick = {(x,y) => this.handleClick(x,y)} />
-      // <hr/>
-      // <Board size = {size} player1 = {false} currentBoard = {this.state.player2Board} onClick = {(x,y) => this.handleClick(x,y)} />
-      // </div>
     )
   }
 }
