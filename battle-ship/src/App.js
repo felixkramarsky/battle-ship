@@ -19,12 +19,14 @@ class Game extends React.Component {
     if(this.state.winner){return}
     // the new board is the board of the player who just clicked
     let replaceBoard = this.state.player1Turn ? JSON.parse(JSON.stringify(this.state.player1Board)): JSON.parse(JSON.stringify(this.state.player2Board));
+    //if the square has not been hit, hit it
     if(!replaceBoard[i][j].hit){
     replaceBoard[i][j].hit = true;
-    console.log(replaceBoard[i][j].hit)
-    console.log(this.state.player1Board[i][j].hit)
+    //if the square has a ship, check if the player has won
     if(replaceBoard[i][j].ship){
+      //set winner to the player who just clicked
       let winner = this.state.player1Turn ? "1": "2";
+      //if any of the squares have a ship that hasnt been hit, set winner to null
       for(let i = 0; i < size; i++){
         for(let j = 0; j < size; j++){
           if(replaceBoard[i][j].ship && !replaceBoard[i][j].hit){
@@ -32,10 +34,12 @@ class Game extends React.Component {
           }
         }
       }
+      //update the winner
       this.setState({
         winner: winner
       })
     }
+    //update the board
     this.setState({
       player1Board: this.state.player1Turn ? replaceBoard: this.state.player1Board,
       player2Board: this.state.player1Turn ? this.state.player2Board: replaceBoard,
@@ -45,6 +49,7 @@ class Game extends React.Component {
     return;
   }
 
+  //create a board with hidden (unhit) ships
   genEnemyBoard(board){
     const newBoard = JSON.parse(JSON.stringify(board));
     for(let i = 0; i < size; i++){
@@ -58,12 +63,15 @@ class Game extends React.Component {
   }
 
   constructor(props){
+    super(props);
+    //generate an array of the size of the board
     const newBoard = new Array(size).fill(0).map((i) => new Array(size).fill({ship: false, hit: false}));
+    //copy the array and place a ship in a random location on each board
     let player1Board = JSON.parse(JSON.stringify(newBoard));
     player1Board[Math.floor(Math.random()*size)][Math.floor(Math.random()*size)].ship = true;
     let player2Board = JSON.parse(JSON.stringify(newBoard));
     player2Board[Math.floor(Math.random()*size)][Math.floor(Math.random()*size)].ship = true;
-    super(props);
+    //set the initial state
     this.state = {
         player1Board: player1Board,
         player2Board: player2Board,
@@ -85,7 +93,7 @@ class Game extends React.Component {
 }
 
 class Board extends React.Component {
-
+  //Figure out the value to place in a square
   getValue(square){
     if(square.hit){
       if(square.ship){
@@ -99,6 +107,7 @@ class Board extends React.Component {
     return null;
   }
 
+  //create a square element
   renderSquare(i,j) {
     return (
       <Square
@@ -115,8 +124,10 @@ class Board extends React.Component {
         {this.props.board === "enemy"? <h2>Enemy Board</h2>: <h2>Allied Board</h2>}    
         <div>
         {
+          //create a row for each row in the board
           this.props.currentBoard.map((row, i) => {
             return(
+              //create a square for each square in the row
               <div key = {i} className = "board-row">
                 {this.props.currentBoard[0].map((square, j) => {
                   return this.renderSquare(i, j);
