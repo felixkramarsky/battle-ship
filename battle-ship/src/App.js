@@ -15,21 +15,23 @@ function Square(props) {
 class Game extends React.Component {
   //This is function is passed to the board and then to the square
   handleClick(i,j){
+    //create a new history
+    let newHistory = [...this.state.history, {player1Board: this.state.player1Board, player2Board: this.state.player2Board}];
     //if there is a winner, do nothing
     if(this.state.winner){return}
     // the new board is the board of the player who just clicked
-    let replaceBoard = this.state.player1Turn ? JSON.parse(JSON.stringify(this.state.player1Board)): JSON.parse(JSON.stringify(this.state.player2Board));
+    let newBoard = this.state.player1Turn ? JSON.parse(JSON.stringify(this.state.player2Board)): JSON.parse(JSON.stringify(this.state.player1Board));
     //if the square has not been hit, hit it
-    if(!replaceBoard[i][j].hit){
-    replaceBoard[i][j].hit = true;
+    if(!newBoard[i][j].hit){
+    newBoard[i][j].hit = true;
     //if the square has a ship, check if the player has won
-    if(replaceBoard[i][j].ship){
+    if(newBoard[i][j].ship){
       //set winner to the player who just clicked
       let winner = this.state.player1Turn ? "1": "2";
       //if any of the squares have a ship that hasnt been hit, set winner to null
       for(let i = 0; i < size; i++){
         for(let j = 0; j < size; j++){
-          if(replaceBoard[i][j].ship && !replaceBoard[i][j].hit){
+          if(newBoard[i][j].ship && !newBoard[i][j].hit){
             winner = null;
           }
         }
@@ -41,12 +43,32 @@ class Game extends React.Component {
     }
     //update the board
     this.setState({
-      player1Board: this.state.player1Turn ? replaceBoard: this.state.player1Board,
-      player2Board: this.state.player1Turn ? this.state.player2Board: replaceBoard,
+      history: newHistory,
+      player1Board: this.state.player1Turn ? this.state.player1Board:newBoard,
+      player2Board: this.state.player1Turn ? newBoard : this.state.player2Board,
       player1Turn: !this.state.player1Turn,
     })
     }
     return;
+  }
+
+  undo(){
+    //if there is no history, do nothing
+    if (this.state.winner) return
+    if(this.state.history.length === 0){
+      console.log("no history!")
+      return
+    }
+    //get the last board state
+    let lastState = this.state.history[this.state.history.length-1];
+    const newHistory = this.state.history.slice(0,this.state.history.length-1);
+    //update the state
+    this.setState({
+      history: newHistory,
+      player1Board: lastState.player1Board,
+      player2Board: lastState.player2Board,
+      player1Turn: !this.state.player1Turn,
+    }) 
   }
 
   //create a board with hidden (unhit) ships
@@ -73,10 +95,11 @@ class Game extends React.Component {
     player2Board[Math.floor(Math.random()*size)][Math.floor(Math.random()*size)].ship = true;
     //set the initial state
     this.state = {
-        player1Board: player1Board,
+        history: [],
+        player1Board: player1Board, 
         player2Board: player2Board,
         player1Turn: true,
-        winner: null
+        winner: null,
      }
 
   }
@@ -85,9 +108,18 @@ class Game extends React.Component {
       <div id = "game">
         {this.state.winner? <h1>Player {this.state.winner} Wins!</h1>: null}
         {this.state.player1Turn? <h1>Player 1</h1>: <h1>Player 2</h1>} 
-        <Board clickable = {true} size = {size} board = "enemy" currentBoard = {this.state.player1Turn ? this.genEnemyBoard(this.state.player1Board): this.genEnemyBoard(this.state.player2Board)} onClick = {(x,y) => this.handleClick(x,y)} />
-        <Board clickable = {false} size = {size} board = "me" currentBoard = {this.state.player1Turn ? this.state.player2Board: this.state.player1Board} onClick = {(x,y) => this.handleClick(x,y)} />
+        <Board clickable = {true} size = {size} board = "enemy" currentBoard = {this.state.player1Turn ? this.genEnemyBoard(this.state.player2Board): this.genEnemyBoard(this.state.player1Board)} onClick = {(x,y) => this.handleClick(x,y)} />
+        <Board clickable = {false} size = {size} board = "me" currentBoard = {this.state.player1Turn ? this.state.player1Board: this.state.player2Board} onClick = {(x,y) => this.handleClick(x,y)} />
+        <Undo onClick = {() => this.undo()}/>
       </div>
+    )
+  }
+}
+
+class Undo extends React.Component {
+  render(){
+    return (
+      <button onClick = {() => this.props.onClick()}>Undo</button>
     )
   }
 }
@@ -113,7 +145,7 @@ class Board extends React.Component {
       <Square
         key = {i*this.props.size+j}
         value={this.getValue(this.props.currentBoard[i][j])}
-        onClick={this.props.clickable?() => this.props.onClick(i,j):null}
+        onClick={this.props.clickable?() => this.props.onClick(i,j):()=>console.log("not clickable")}
       />
     );
   }
