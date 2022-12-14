@@ -2,6 +2,7 @@ import './App.css';
 import React from "react";
 
 const size = 7;
+const shipsPerPlayer = 5;
 
 function Square(props) {
   // a square is just a button
@@ -41,20 +42,28 @@ class Game extends React.Component {
         winner: winner
       })
     }
-    //update the board
+    // if not hit, switch to other's turn
+   if(!newBoard[i][j].ship){
+      this.setState({
+        waiting: true,
+        player1Turn: !this.state.player1Turn,
+      })
+    }
+    // update board
     this.setState({
       history: newHistory,
       player1Board: this.state.player1Turn ? this.state.player1Board:newBoard,
       player2Board: this.state.player1Turn ? newBoard : this.state.player2Board,
-      player1Turn: !this.state.player1Turn,
-    })
+})
     }
+    
     return;
   }
 
   undo(){
-    //if there is no history, do nothing
+    // if game is won, do nothing
     if (this.state.winner) return
+    //if there is no history, do nothing
     if(this.state.history.length === 0){
       console.log("no history!")
       return
@@ -64,6 +73,7 @@ class Game extends React.Component {
     const newHistory = this.state.history.slice(0,this.state.history.length-1);
     //update the state
     this.setState({
+      waiting: true,
       history: newHistory,
       player1Board: lastState.player1Board,
       player2Board: lastState.player2Board,
@@ -83,27 +93,52 @@ class Game extends React.Component {
     }
     return newBoard;
   }
-
+  
   constructor(props){
     super(props);
     //generate an array of the size of the board
     const newBoard = new Array(size).fill(0).map((i) => new Array(size).fill({ship: false, hit: false}));
     //copy the array and place a ship in a random location on each board
     let player1Board = JSON.parse(JSON.stringify(newBoard));
-    player1Board[Math.floor(Math.random()*size)][Math.floor(Math.random()*size)].ship = true;
     let player2Board = JSON.parse(JSON.stringify(newBoard));
-    player2Board[Math.floor(Math.random()*size)][Math.floor(Math.random()*size)].ship = true;
+    //
+    let ships = 0;
+    while(ships < shipsPerPlayer){
+      let randCoord = [Math.floor(Math.random()*size), Math.floor(Math.random()*size)];
+      if(!player1Board[randCoord[0]][randCoord[1]].ship){
+        ships++;
+        player1Board[randCoord[0]][randCoord[1]].ship = true;
+    
+      }
+    }    
+    ships = 0
+    while(ships < shipsPerPlayer){
+      let randCoord = [Math.floor(Math.random()*size),Math.floor(Math.random()*size)];
+      if(!player2Board[randCoord[0]][randCoord[1]].ship){
+        ships++;
+        player2Board[randCoord[0]][randCoord[1]].ship = true;
+      }
+    }
     //set the initial state
     this.state = {
         history: [],
         player1Board: player1Board, 
         player2Board: player2Board,
+        waiting: true,
         player1Turn: true,
         winner: null,
      }
 
   }
   render(){
+    if(this.state.waiting){
+      return (
+        <div id = "game">
+          <h1>Waiting for player {this.state.player1Turn? "1": "2"}</h1>
+          <button onClick = {() => this.setState({waiting:false})}>Go!</button>
+        </div>
+      )
+    }
     return (
       <div id = "game">
         {this.state.winner? <h1>Player {this.state.winner} Wins!</h1>: null}
