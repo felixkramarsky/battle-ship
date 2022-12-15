@@ -135,7 +135,7 @@ class Game extends React.Component {
       return (
         <div id="game">
           <h1>Waiting for player {this.state.player1Turn ? "1" : "2"}</h1>
-          <button onClick={() => this.setState({ waiting: false })}>Go!</button>
+          <div id = "buttons"><button onClick={() => this.setState({ waiting: false })}>Go!</button></div>
         </div>
       )
     }
